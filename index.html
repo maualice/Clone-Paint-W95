@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint.js</title>
+    <style>
+        *,*::before,*::after{
+            box-sizing: border-box;
+        }
+
+        body{
+            font-family: 'Arial',sans-serif;
+            background: #222;
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1{
+            color:#fce300;  
+            font-size:12px;
+            font-weight: 600;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+
+            img{
+                width: 16px;
+                height: auto;
+            }
+        }
+
+        canvas{
+            background: #fff;
+        }
+
+        header{
+            background:silver;
+            padding: 2px;
+
+            button{
+                border:0;
+                background: transparent;
+
+                &:hover{
+                    box-shadow: 
+                    1px 1px black,
+                    inset -1px -1px gray, /*inset es para sombras interas*/
+                    inset 1px 1px white;
+                }
+            }
+        }
+
+        main{
+            padding: 16px;
+        }
+
+        footer{
+            background: silver;
+            padding: 4px;
+        }
+
+        #container{
+            border: 1px solid #888080;
+        }
+    </style>
+    <script type="module"> /*son defer,aunque carga javascript no se va a evaluar hasta que no se renderice todo el html */
+        //CONSTANTS
+        const MODES={
+            DRAW:'draw',
+            ERASE:'erase',
+            RECTANGLE:'rectangle',
+            ELLIPSE:'ellipse',
+            PICKER:'picker'
+        }
+        //UTILITIES
+        const $ = selector => document.querySelector(selector)//para recuperar uno
+        const $$ = selector => document.querySelectorAll(selector) //para recuperar uan lista de elementos
+
+        //ELEMENTS
+        const $canvas=$('#canvas') //$ es para identificar rapidamente que tiene un elemento en el DOM
+        const $colorPicker = $('#color-picker')
+
+        const ctx=$canvas.getContext('2d')
+
+        //STATE
+        let isDrawing=false
+        let startX,startY
+        let lastX=0
+        let lastY=0
+        let mode = MODES.DRAW
+
+        //EVENTS
+        /* $canvas.addEventListener('mousedown',startDrawing)
+        $canvas.addEventListener('mousemove',draw)
+        $canvas.addEventListener('mouseup',stopDrawing)
+        $canvas.addEventListener('mouseleave',stopDrawing) */
+        $canvas.addEventListener('pointerdown',startDrawing)
+        $canvas.addEventListener('pointermove',draw)
+        $canvas.addEventListener('pointerup',stopDrawing)
+        $canvas.addEventListener('pointerleave',stopDrawing)
+
+        $colorPicker.addEventListener('change',handleChageColor)
+
+        //METHODS
+        function startDrawing(event){
+            isDrawing = true
+            const { offsetX, offsetY } = event
+
+            //guardar las coodernada iniciales
+            ;[startX,startY]=[offsetX,offsetY]
+            ;[lastX,lastY]=[offsetX,offsetY]
+
+            /* startX=offsetX
+            startY=offsetY
+            lastX=offsetX
+            lastY=offsetY */
+        }
+
+        function draw(event){
+            if(!isDrawing) return
+
+            const {offsetX,offsetY}=event
+
+            //comenzar un trazado
+            ctx.beginPath()
+
+            //mover el trazado a las coordenadas actuales
+            ctx.moveTo(lastX,lastY)
+
+            //dibujar una linea entre coordenadas actuales y las nuevas 
+            ctx.lineTo(offsetX,offsetY)
+
+            ctx.stroke()
+
+            //actualizar la ultima coordenada utilizada
+            ;[lastX,lastY] = [offsetX,offsetY]
+        }
+
+        function stopDrawing(event){
+            isDrawing =false
+        }
+
+        function handleChageColor(event){
+            const { value } = $colorPicker
+            ctx.strokeStyle=value
+
+        }
+        //agregar https://developer.mozilla.org/es/docs/Web/API/Touch_events
+        //js standard style
+    </script>
+</head>
+<body>
+    <h1>
+        <img src="./icon.png" alt="Paint.js">
+        Paint.js
+    </h1>
+
+<div id="container">
+    <header>
+        <button>File</button>
+        <button>Edit</button>
+        <button>View</button>
+        <button>Image</button>
+        <button>Options</button>
+        <button>Help</button>
+    </header>
+
+    <main>
+        <canvas id="canvas" width="300" height="200"></canvas>
+    </main>
+
+    <footer>
+        <input type="color" id="color-picker" value="#000000">
+    </footer>
+</div>
+    
+</body>
+</html> 
