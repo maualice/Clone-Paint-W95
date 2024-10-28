@@ -73,10 +73,10 @@
         #container {
             border: 1px solid #888080;
             display: grid;
-            grid-template-areas: 
-            "header header header"
-            "aside main main"
-            "footer footer footer";
+            grid-template-areas:
+                "header header header"
+                "aside main main"
+                "footer footer footer";
         }
 
         aside {
@@ -151,6 +151,7 @@
         //ELEMENTS
         const $canvas = $('#canvas') //$ es para identificar rapidamente que tiene un elemento en el DOM
         const $colorPicker = $('#color-picker')
+        const $clearBtn = $('#clear-btn')
 
         const ctx = $canvas.getContext('2d')
 
@@ -172,15 +173,16 @@
         $canvas.addEventListener('pointerleave', stopDrawing)
 
         $colorPicker.addEventListener('change', handleChageColor)
+        $clearBtn.addEventListener('click', clearCanvas)
 
         //METHODS
         function startDrawing(event) {
             isDrawing = true
             const { offsetX, offsetY } = event
 
-            //guardar las coodernada iniciales
-            ;[startX, startY] = [offsetX, offsetY]
-            ;[lastX, lastY] = [offsetX, offsetY]
+                //guardar las coodernada iniciales
+                ;[startX, startY] = [offsetX, offsetY]
+                ;[lastX, lastY] = [offsetX, offsetY]
 
             /* startX=offsetX
             startY=offsetY
@@ -204,8 +206,8 @@
 
             ctx.stroke()
 
-            //actualizar la ultima coordenada utilizada
-            ;[lastX, lastY] = [offsetX, offsetY]
+                //actualizar la ultima coordenada utilizada
+                ;[lastX, lastY] = [offsetX, offsetY]
         }
 
         function stopDrawing(event) {
@@ -215,6 +217,11 @@
         function handleChageColor(event) {
             const { value } = $colorPicker
             ctx.strokeStyle = value
+        }
+
+        function clearCanvas() {
+            //tambien ayudaria a limpiar parte del canvas con la herramienta de seleccion
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
         }
     </script>
 </head>
