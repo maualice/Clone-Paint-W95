@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paint.js</title>
     <style>
-        *,*::before,*::after{
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
         }
 
-        body{
-            font-family: 'Arial',sans-serif;
+        body {
+            font-family: 'Arial', sans-serif;
             background: #222;
             padding: 16px;
             max-width: 500px;
             margin: 0 auto;
         }
 
-        h1{
-            color:#fce300;  
-            font-size:12px;
+        h1 {
+            color: #fce300;
+            font-size: 12px;
             font-weight: 600;
 
             display: flex;
@@ -27,59 +30,69 @@
             align-items: center;
             gap: 4px;
 
-            img{
+            img {
                 width: 16px;
                 height: auto;
             }
         }
 
-        canvas{
+        canvas {
             background: #fff;
         }
 
-        header{
-            background:silver;
+        header {
+            grid-area: header;
+            background: silver;
             padding: 2px;
 
-            button{
-                border:0;
+            button {
+                border: 0;
                 background: transparent;
 
-                &:hover{
-                    box-shadow: 
-                    1px 1px black,
-                    inset -1px -1px gray, /*inset es para sombras interas*/
-                    inset 1px 1px white;
+                &:hover {
+                    box-shadow:
+                        1px 1px black,
+                        inset -1px -1px gray,
+                        /*inset es para sombras internas*/
+                        inset 1px 1px white;
                 }
             }
         }
 
-        main{
+        main {
+            grid-area: main;
             padding: 16px;
         }
 
-        footer{
+        footer {
+            grid-area: footer;
             background: silver;
             padding: 4px;
         }
 
-        #container{
+        #container {
             border: 1px solid #888080;
+            display: grid;
+            grid-template-areas: 
+            "header header header"
+            "aside main main"
+            "footer footer footer";
         }
 
-        aside{
+        aside {
             background-color: silver;
+            grid-area: aside;
             width: 52px;
             padding-top: 2px;
 
-            nav{
+            nav {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1px;
                 justify-content: center;
             }
 
-            button{
+            button {
                 width: 24px;
                 height: 24px;
 
@@ -89,9 +102,10 @@
                 border-right-color: #000;
                 border-bottom-color: #000;
 
-                image-rendering: pixelated; /*para asegurarse que si es un icono pixelado quede ecactamente asi cuando se hace mas grande*/
+                image-rendering: pixelated;
+                /*para asegurarse que si es un icono pixelado quede exactamente asi cuando se hace mas grande*/
 
-                &.active{
+                &.active {
                     background-color: #eee;
                     border-color: #000;
                     border-right-color: #eee;
@@ -99,23 +113,23 @@
                 }
             }
 
-            #erase-btn{
+            #erase-btn {
                 background-image: url('/icons/erase.png');
             }
 
-            #rectangle-btn{
+            #rectangle-btn {
                 background-image: url('/icons/rectangle.png');
             }
 
-            #ellipse-btn{
+            #ellipse-btn {
                 background-image: url('/icons/ellipse.png');
             }
 
-            #picker-btn{
+            #picker-btn {
                 background-image: url('/icons/picker.png');
             }
 
-            #clear-btn{
+            #clear-btn {
                 background-image: url('/icons/trash.png');
                 background-size: 18px;
             }
@@ -123,28 +137,28 @@
     </style>
     <script type="module"> /*son defer,aunque carga javascript no se va a evaluar hasta que no se renderice todo el html */
         //CONSTANTS
-        const MODES={
-            DRAW:'draw',
-            ERASE:'erase',
-            RECTANGLE:'rectangle',
-            ELLIPSE:'ellipse',
-            PICKER:'picker'
+        const MODES = {
+            DRAW: 'draw',
+            ERASE: 'erase',
+            RECTANGLE: 'rectangle',
+            ELLIPSE: 'ellipse',
+            PICKER: 'picker'
         }
         //UTILITIES
         const $ = selector => document.querySelector(selector)//para recuperar uno
         const $$ = selector => document.querySelectorAll(selector) //para recuperar uan lista de elementos
 
         //ELEMENTS
-        const $canvas=$('#canvas') //$ es para identificar rapidamente que tiene un elemento en el DOM
+        const $canvas = $('#canvas') //$ es para identificar rapidamente que tiene un elemento en el DOM
         const $colorPicker = $('#color-picker')
 
-        const ctx=$canvas.getContext('2d')
+        const ctx = $canvas.getContext('2d')
 
         //STATE
-        let isDrawing=false
-        let startX,startY
-        let lastX=0
-        let lastY=0
+        let isDrawing = false
+        let startX, startY
+        let lastX = 0
+        let lastY = 0
         let mode = MODES.DRAW
 
         //EVENTS
@@ -152,21 +166,21 @@
         $canvas.addEventListener('mousemove',draw)
         $canvas.addEventListener('mouseup',stopDrawing)
         $canvas.addEventListener('mouseleave',stopDrawing) */
-        $canvas.addEventListener('pointerdown',startDrawing)
-        $canvas.addEventListener('pointermove',draw)
-        $canvas.addEventListener('pointerup',stopDrawing)
-        $canvas.addEventListener('pointerleave',stopDrawing)
+        $canvas.addEventListener('pointerdown', startDrawing)
+        $canvas.addEventListener('pointermove', draw)
+        $canvas.addEventListener('pointerup', stopDrawing)
+        $canvas.addEventListener('pointerleave', stopDrawing)
 
-        $colorPicker.addEventListener('change',handleChageColor)
+        $colorPicker.addEventListener('change', handleChageColor)
 
         //METHODS
-        function startDrawing(event){
+        function startDrawing(event) {
             isDrawing = true
             const { offsetX, offsetY } = event
 
             //guardar las coodernada iniciales
-            ;[startX,startY]=[offsetX,offsetY]
-            ;[lastX,lastY]=[offsetX,offsetY]
+            ;[startX, startY] = [offsetX, offsetY]
+            ;[lastX, lastY] = [offsetX, offsetY]
 
             /* startX=offsetX
             startY=offsetY
@@ -174,74 +188,73 @@
             lastY=offsetY */
         }
 
-        function draw(event){
-            if(!isDrawing) return
+        function draw(event) {
+            if (!isDrawing) return
 
-            const {offsetX,offsetY}=event
+            const { offsetX, offsetY } = event
 
             //comenzar un trazado
             ctx.beginPath()
 
             //mover el trazado a las coordenadas actuales
-            ctx.moveTo(lastX,lastY)
+            ctx.moveTo(lastX, lastY)
 
             //dibujar una linea entre coordenadas actuales y las nuevas 
-            ctx.lineTo(offsetX,offsetY)
+            ctx.lineTo(offsetX, offsetY)
 
             ctx.stroke()
 
             //actualizar la ultima coordenada utilizada
-            ;[lastX,lastY] = [offsetX,offsetY]
+            ;[lastX, lastY] = [offsetX, offsetY]
         }
 
-        function stopDrawing(event){
-            isDrawing =false
+        function stopDrawing(event) {
+            isDrawing = false
         }
 
-        function handleChageColor(event){
+        function handleChageColor(event) {
             const { value } = $colorPicker
-            ctx.strokeStyle=value
-
+            ctx.strokeStyle = value
         }
-        //agregar https://developer.mozilla.org/es/docs/Web/API/Touch_events
-        //js standard style
     </script>
 </head>
+
 <body>
     <h1>
         <img src="./icon.png" alt="Paint.js">
         Paint.js
     </h1>
 
-<div id="container">
-    <header>
-        <button>File</button>
-        <button>Edit</button>
-        <button>View</button>
-        <button>Image</button>
-        <button>Options</button>
-        <button>Help</button>
-    </header>
+    <div id="container">
+        <header>
+            <button>File</button>
+            <button>Edit</button>
+            <button>View</button>
+            <button>Image</button>
+            <button>Options</button>
+            <button>Help</button>
+        </header>
 
-    <aside>
-        <nav>
-            <button class="active" id="draw-btn" title="Pincel"></button>
-            <button id="erase-btn" title="Borrar"></button>
-            <button id="rectangle-btn" title="Rectangulo"></button>
-            <button id="ellipse-btn" title="Elipse"></button>
-            <button id="picker-btn" title="Capturar Color"></button>
-            <button id="clear-btn" title="Limpiar dibujo"></button>
-        </nav>
-    </aside>
+        <aside>
+            <nav>
+                <button class="active" id="draw-btn" title="Pincel"></button>
+                <button id="erase-btn" title="Borrar"></button>
+                <button id="rectangle-btn" title="Rectangulo"></button>
+                <button id="ellipse-btn" title="Elipse"></button>
+                <button id="picker-btn" title="Capturar Color"></button>
+                <button id="clear-btn" title="Limpiar dibujo"></button>
+            </nav>
+        </aside>
 
-    <main>
-        <canvas id="canvas" width="300" height="200"></canvas>
-    </main>
+        <main>
+            <canvas id="canvas" width="300" height="200"></canvas>
+        </main>
 
-    <footer>
-        <input type="color" id="color-picker" value="#000000">
-    </footer>
-</div>
-    
+        <footer>
+            <input type="color" id="color-picker" value="#000000">
+        </footer>
+    </div>
+
 </body>
-</html> 
+
+</html>
