@@ -153,6 +153,7 @@
         const $colorPicker = $('#color-picker')
         const $clearBtn = $('#clear-btn')
         const $drawBtn = $('#draw-btn')
+        const $eraseBtn = $('#erase-btn')
         const $rectangleBtn = $('#rectangle-btn')
 
         const ctx = $canvas.getContext('2d')
@@ -178,6 +179,10 @@
         $colorPicker.addEventListener('change', handleChageColor)
         $clearBtn.addEventListener('click', clearCanvas)
 
+        $eraseBtn.addEventListener('click', () => {
+            setMode(MODES.ERASE)
+        })
+
         $rectangleBtn.addEventListener('click', () => {
             setMode(MODES.RECTANGLE)
         })
@@ -185,6 +190,7 @@
         $drawBtn.addEventListener('click', () => {
             setMode(MODES.DRAW)
         })
+
         //METHODS
         function startDrawing(event) {
             isDrawing = true
@@ -203,7 +209,7 @@
 
             const { offsetX, offsetY } = event
 
-            if (mode === MODES.DRAW) {
+            if (mode === MODES.DRAW || mode === MODES.ERASE) {
                 //comenzar un trazado
                 ctx.beginPath()
 
@@ -222,7 +228,7 @@
             }
 
             if (mode === MODES.RECTANGLE) {
-                ctx.putImageData(imageData,0,0) //recuperamos imagen del principio del dibujo y la "dibujamos" en la posicion indicada
+                ctx.putImageData(imageData, 0, 0) //recuperamos imagen del principio del dibujo y la "dibujamos" en la posicion indicada
                 //esto es para resolver el problema que dibuje constantemente al arrastrar el puntero
                 //starX-> coordernada inicial del click
                 const width = offsetX - startX
@@ -257,6 +263,7 @@
             if (mode === MODES.DRAW) {
                 $drawBtn.classList.add('active')
                 canvas.style.cursor = 'crosshair'
+                ctx.globalCompositeOperation = 'source-over'
                 ctx.lineWidth = 2
                 return
             }
@@ -264,11 +271,22 @@
             if (mode === MODES.RECTANGLE) {
                 $rectangleBtn.classList.add('active')
                 canvas.style.cursor = 'nw-resize'
+                ctx.globalCompositeOperation = 'source-over'
                 ctx.lineWidth = 2
+                return
+            }
+
+            if (mode === MODES.ERASE) {
+                $eraseBtn.classList.add('active')
+                canvas.style.cursor = 'url("./cursores/erase.png") 0 24, auto'  //auto Si por alguna razón la imagen del cursor no se puede cargar, el navegador utilizará el cursor predeterminado del sistema y 0 24 es la posicion horizontal y vertical dentro de la imagen del cursor
+                ctx.globalCompositeOperation = 'destination-out' //El contenido existente se mantiene donde no se superponga a la nueva forma,se tiene que "dibujar" por encima
+                ctx.lineWidth = 20
                 return
             }
         }
 
+        //INIT
+        setMode(MODES.DRAW)
     </script>
 </head>
 
@@ -290,7 +308,7 @@
 
         <aside>
             <nav>
-                <button class="active" id="draw-btn" title="Pincel"></button>
+                <button id="draw-btn" title="Pincel"></button>
                 <button id="erase-btn" title="Borrar"></button>
                 <button id="rectangle-btn" title="Rectangulo"></button>
                 <button id="ellipse-btn" title="Elipse"></button>
