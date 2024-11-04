@@ -111,6 +111,11 @@
                     border-right-color: #eee;
                     border-bottom-color: #eee;
                 }
+
+                &[disabled] {
+                    pointer-events: none;
+                    opacity: .5;
+                }
             }
 
             #erase-btn {
@@ -155,6 +160,7 @@
         const $drawBtn = $('#draw-btn')
         const $eraseBtn = $('#erase-btn')
         const $rectangleBtn = $('#rectangle-btn')
+        const $pickerBtn = $('#picker-btn')
 
         const ctx = $canvas.getContext('2d')
 
@@ -181,6 +187,10 @@
 
         $eraseBtn.addEventListener('click', () => {
             setMode(MODES.ERASE)
+        })
+
+        $pickerBtn.addEventListener('click', () => {
+            setMode(MODES.PICKER)
         })
 
         $rectangleBtn.addEventListener('click', () => {
@@ -255,7 +265,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height)
         }
 
-        function setMode(newMode) {
+        async function setMode(newMode) {
+            let previousMode = mode
             mode = newMode
 
             $('button.active')?.classList.remove('active')
@@ -283,10 +294,32 @@
                 ctx.lineWidth = 20
                 return
             }
+
+            if (mode === MODES.PICKER) {
+                $pickerBtn.classList.add('active')
+                const eyeDropper = new window.EyeDropper()
+
+                try {
+                    const result = await eyeDropper.open()
+                    const { sRGBHex } = result
+                    ctx.strokeStyle = sRGBHex
+                    $colorPicker.value=sRGBHex
+                    setMode(previousMode)
+                } catch (e) {
+                    //si ha habido un error o el usuario no ha recuperado ningun color
+                }
+                return
+            }
         }
 
         //INIT
         setMode(MODES.DRAW)
+
+        //Show Picker if browser has suppport
+        if (typeof window.EyeDropper !== 'undefined') {
+            $pickerBtn.removeAttribute('disabled')
+            //$pickerBtn.style.display='block'
+        }
     </script>
 </head>
 
@@ -312,7 +345,7 @@
                 <button id="erase-btn" title="Borrar"></button>
                 <button id="rectangle-btn" title="Rectangulo"></button>
                 <button id="ellipse-btn" title="Elipse"></button>
-                <button id="picker-btn" title="Capturar Color"></button>
+                <button disabled id="picker-btn" title="Capturar Color"></button>
                 <button id="clear-btn" title="Limpiar dibujo"></button>
             </nav>
         </aside>
