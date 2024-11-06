@@ -166,6 +166,7 @@
 
         //STATE
         let isDrawing = false
+        let isShiftPressed = false
         let startX, startY
         let lastX = 0
         let lastY = 0
@@ -184,6 +185,9 @@
 
         $colorPicker.addEventListener('change', handleChageColor)
         $clearBtn.addEventListener('click', clearCanvas)
+
+        document.addEventListener('keydown', handleKeyDown)
+        document.addEventListener('keyup', handleKeyUp)
 
         $eraseBtn.addEventListener('click', () => {
             setMode(MODES.ERASE)
@@ -241,14 +245,26 @@
                 ctx.putImageData(imageData, 0, 0) //recuperamos imagen del principio del dibujo y la "dibujamos" en la posicion indicada
                 //esto es para resolver el problema que dibuje constantemente al arrastrar el puntero
                 //starX-> coordernada inicial del click
-                const width = offsetX - startX
-                const height = offsetY - startY
+                let width = offsetX - startX
+                let height = offsetY - startY
+
+                if(isShiftPressed){
+                    const sideLength=Math.min(
+                        Math.abs(width),
+                        Math.abs(height)
+                    )
+                
+                width = width > 0 ? sideLength : -sideLength
+                height = height > 0 ? sideLength : -sideLength
+                }
 
                 ctx.beginPath()
                 ctx.rect(startX, startY, width, height)
                 ctx.stroke()
                 return
             }
+
+            handleKeyUp
         }
 
         function stopDrawing(event) {
@@ -303,13 +319,21 @@
                     const result = await eyeDropper.open()
                     const { sRGBHex } = result
                     ctx.strokeStyle = sRGBHex
-                    $colorPicker.value=sRGBHex
+                    $colorPicker.value = sRGBHex
                     setMode(previousMode)
                 } catch (e) {
                     //si ha habido un error o el usuario no ha recuperado ningun color
                 }
                 return
             }
+        }
+
+        function handleKeyDown({key}) { 
+          isShiftPressed = key === 'Shift' //event.key 
+        }
+
+        function handleKeyUp({key}) { //(event)
+            if(key === 'Shift') isShiftPressed = false //event.key 
         }
 
         //INIT
